@@ -12,14 +12,16 @@
 #    limitations under the License.
 #
 
+require 'curb'
+
 module Fluent
   class CurlSimpleOutput < Output
     Plugin.register_output('curl_simple', self)
 
     config_param :server, :string, :default => "http://localhost"
     config_param :data_key, :string, :default => "json"
-    config_param :ssl_verify_peer, :boolean, :default => true
-    config_param :verbose, :boolean, :default => false
+    config_param :ssl_verify_peer, :bool, :default => true
+    config_param :verbose, :bool, :default => false
 
     def configure(conf)
       super
@@ -27,10 +29,10 @@ module Fluent
 
     def emit(tag, es, chain)
       es.each {|time,record|
-        Curl.post(:server, {:data_key, Yajl.dump(record)}) do |curl|
+        Curl.post(@server, {@data_key => Yajl.dump(record) } ) do |curl|
           curl.follow_location = true
-          curl.verbose = :verbose
-          curl.ssl_verify_peer = :ssl_verify
+          curl.verbose = @verbose
+          curl.ssl_verify_peer = @ssl_verify_peer
           #curl.on_missing
           #curl.on_failure
         end
